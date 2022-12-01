@@ -7,7 +7,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_calories() {
+    fn test_highest_calories() {
         let test_input1 = "test_input1.txt";
 
         let elves = Elves::build(test_input1).unwrap_or_else(|err| {
@@ -16,6 +16,18 @@ mod tests {
         });
 
         assert_eq!(24000, get_max_calories(&elves))
+    }
+
+    #[test]
+    fn test_top_three_calories_summed() {
+        let test_input1 = "test_input1.txt";
+
+        let elves = Elves::build(test_input1).unwrap_or_else(|err| {
+            eprintln!("Problem parsing file: {err}");
+            process::exit(1);
+        });
+
+        assert_eq!(45000, get_top_three_calories_summed(&elves))
     }
 }
 
@@ -63,6 +75,15 @@ pub fn get_max_calories(elves: &Elves) -> i32{
     }
 }
 
+pub fn get_top_three_calories_summed(elves: &Elves) -> i32{
+    let mut calories = elves.calories.clone();
+    calories.sort_unstable(); 
+
+    &calories[calories.len()-1] 
+        + &calories[calories.len()-2] 
+        + &calories[calories.len()-3]
+}
+
 fn main() {
     let final_input = "input.txt";
 
@@ -73,5 +94,10 @@ fn main() {
 
     let highest_calories = get_max_calories(&elves);
 
-    println!("Highest amount of calories: {highest_calories}")
+    println!("Part 1: Highest amount of calories [{highest_calories}]");
+
+    let top_three_calories_summed = get_top_three_calories_summed(&elves);
+
+    println!("Part 2: Top three calories summed [{top_three_calories_summed}]");
+
 }
