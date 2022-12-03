@@ -18,7 +18,6 @@ fn main() {
 
     println!("Part 1: Score from following strategy [{}]", rps.get_total_score_part1());
 
-
-    // println!("Part 2: [{}]", rps.get_total_score());
+    println!("Part 2: Score from new strategy [{}]", rps.get_total_score_part2());
 
 }

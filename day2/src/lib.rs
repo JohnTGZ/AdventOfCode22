@@ -44,6 +44,7 @@ struct ShapeMetadata {
     shape_score: u8,
     draw: &'static str,
     win: &'static str,
+    loses_to: &'static str,
 }
 
 pub struct RPS {
@@ -72,6 +73,7 @@ impl RPS {
                 shape_score: 1,
                 draw: "A",
                 win: "C",
+                loses_to: "B",
             }
         );
         shape_metadata_hash.insert(
@@ -80,6 +82,7 @@ impl RPS {
                 shape_score: 2,
                 draw: "B",
                 win: "A",
+                loses_to: "C",
             }
         );
         shape_metadata_hash.insert(
@@ -88,6 +91,36 @@ impl RPS {
                 shape_score: 3,
                 draw: "C",
                 win: "B",
+                loses_to: "A",
+            }
+        );
+
+        // For part 2, 
+        shape_metadata_hash.insert(
+            "A".to_string(), 
+            ShapeMetadata{
+                shape_score: 1,
+                draw: "X",
+                win: "Z",
+                loses_to: "Y",
+            }
+        );
+        shape_metadata_hash.insert(
+            "B".to_string(), 
+            ShapeMetadata{
+                shape_score: 2,
+                draw: "Y",
+                win: "X",
+                loses_to: "Z",
+            }
+        );
+        shape_metadata_hash.insert(
+            "C".to_string(), 
+            ShapeMetadata{
+                shape_score: 3,
+                draw: "Z",
+                win: "Y",
+                loses_to: "X",
             }
         );
 
@@ -108,7 +141,7 @@ impl RPS {
         )
     }
 
-    pub fn get_score(&self, shape_elf: &str, shape_self: &str) -> Option<u8>{
+    pub fn get_score_part1(&self, shape_elf: &str, shape_self: &str) -> Option<u8>{
         let mut score: u8 = 0;
 
         // Add score for shape choosed
@@ -132,25 +165,34 @@ impl RPS {
         Some(score)
     }
     
-    pub fn get_score_part2(&self, shape_elf: &str, shape_self: &str) -> Option<u8>{
+    pub fn get_score_part2(&self, shape_elf: &str, match_outcome: &str) -> Option<u8>{
         let mut score: u8 = 0;
 
-        // Add score for shape choosed
-        match self.shape_metadata_hash.get(shape_self){
-            Some(shape_metadata) => {
-                score += shape_metadata.shape_score;
+        let elf_shape_metadata = 
+            self.shape_metadata_hash
+                .get(shape_elf)
+                .expect("Shape not found!");
 
-                if shape_metadata.win == shape_elf {
-                    score += 6;
-                } 
-                else if shape_metadata.draw == shape_elf {
-                    score += 3;
-                }
+        match match_outcome {
+            "X" => { // Lose
+                score += self.shape_metadata_hash
+                            .get(elf_shape_metadata.win)
+                            .expect("Shape not found!")
+                            .shape_score;
             },
-            _ => {
-                println!("Invalid shape!");
-                return None;
+            "Y" => { // End in draw
+                score += 3 + self.shape_metadata_hash
+                                .get(elf_shape_metadata.draw)
+                                .expect("Shape not found!")
+                                .shape_score;
             },
+            "Z" => { // Win
+                score += 6 + self.shape_metadata_hash
+                                .get(elf_shape_metadata.loses_to)
+                                .expect("Shape not found!")
+                                .shape_score;
+            }
+            _ => panic!("Invalid match outcome"),
         }
 
         Some(score)
@@ -159,7 +201,7 @@ impl RPS {
     pub fn get_total_score_part1(&self) -> u64 {
         let mut total_score: u64 = 0;
         for rps_move in &self.rps_moves {
-            let match_score = self.get_score(&rps_move[0], &rps_move[1])
+            let match_score = self.get_score_part1(&rps_move[0], &rps_move[1])
                 .unwrap_or_else(||{
                     panic!("Unable to get score!");
                 });
@@ -168,7 +210,7 @@ impl RPS {
         total_score
     }
 
-    pub fn get_total_score_part1(&self) -> u64 {
+    pub fn get_total_score_part2(&self) -> u64 {
         let mut total_score: u64 = 0;
         for rps_move in &self.rps_moves {
             let match_score = self.get_score_part2(&rps_move[0], &rps_move[1])
