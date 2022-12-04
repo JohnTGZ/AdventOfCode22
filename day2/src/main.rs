@@ -10,8 +10,7 @@ fn main() {
     let file_contents = 
         FileContents::build(test_input_filepath, split_delim)
             .unwrap_or_else(|err| {
-                eprintln!("Problem parsing file: {err}");
-                panic!("Unable to parse file");
+                panic!("Unable to parse file: {err}");
             });
 
     let rps = RPS::build(&file_contents).expect("Error building a RPS (Rock,Papers,Scissors) object");

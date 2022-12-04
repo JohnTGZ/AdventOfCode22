@@ -6,11 +6,13 @@ use std::collections::HashSet;
 mod tests {
     use super::*;
 
+    fn setup() -> Vec<Rucksack> {
+        Rucksack::build("../input/day3/test_input.txt")
+    }
+
     #[test]
     fn test_build_rucksack() {
-        let test_input_filepath = "../input/day3/test_input.txt";
-
-        let rucksacks = Rucksack::build(test_input_filepath);
+        let rucksacks = setup();
 
         assert_eq!("vJrwpWtwJgWr", rucksacks[0].first);
         assert_eq!("hcsFMMfFFhFp", rucksacks[0].second);
@@ -20,9 +22,7 @@ mod tests {
 
     #[test]
     fn test_common_letter() {
-        let test_input_filepath = "../input/day3/test_input.txt";
-
-        let rucksacks = Rucksack::build(test_input_filepath);
+        let rucksacks = setup();
 
         assert_eq!(Some('p'), rucksacks[0].get_common_letter());
         assert_eq!(Some('L'), rucksacks[1].get_common_letter());
@@ -50,18 +50,14 @@ mod tests {
 
     #[test]
     fn test_total_priority() {
-        let test_input_filepath = "../input/day3/test_input.txt";
-
-        let rucksacks = Rucksack::build(test_input_filepath);
+        let rucksacks = setup();
 
         assert_eq!(157, Rucksack::get_total_priority(&rucksacks));
     }
 
     #[test]
     fn test_common_letter_3_bags() {
-        let test_input_filepath = "../input/day3/test_input.txt";
-
-        let rucksacks = Rucksack::build(test_input_filepath);
+        let rucksacks = setup();
 
         assert_eq!(Some('r'), Rucksack::get_common_letter_n_bags(&rucksacks[0..3]));
         assert_eq!(Some('Z'), Rucksack::get_common_letter_n_bags(&rucksacks[3..6]));
@@ -70,9 +66,7 @@ mod tests {
 
     #[test]
     fn test_total_priority_part2() {
-        let test_input_filepath = "../input/day3/test_input.txt";
-
-        let rucksacks = Rucksack::build(test_input_filepath);
+        let rucksacks = setup();
 
         assert_eq!(70, Rucksack::get_total_priority_part2(&rucksacks));
     }

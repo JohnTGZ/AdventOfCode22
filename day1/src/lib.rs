@@ -1,12 +1,12 @@
 use aoc_common::FileContents;
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_highest_calories() {
-        let test_input_filepath = "../input/day1/test_input.txt";
+    fn setup() -> Elves{
+        let test_input_filepath= "../input/day1/test_input.txt";
         let split_delim = "\n\n";
 
         let file_contents = 
@@ -15,26 +15,25 @@ mod tests {
                     panic!("Unable to parse file: {err}");
                 });
 
-        let elves = Elves::build(&file_contents);
+        Elves::build(&file_contents)
+    }
+
+    #[test]
+    fn test_highest_calories() {
+
+        let elves = setup();
 
         assert_eq!(24000, elves.get_max_calories())
     }
 
     #[test]
     fn test_top_three_calories_summed() {
-        let test_input_filepath = "../input/day1/test_input.txt";
-        let split_delim = "\n\n";
 
-        let file_contents = 
-            FileContents::build(test_input_filepath, split_delim)
-                .unwrap_or_else(|err| {
-                    panic!("Unable to parse file: {err}");
-                });
-
-        let elves = Elves::build(&file_contents);
+        let elves = setup();
 
         assert_eq!(45000, elves.get_top_three_calories_summed())
     }
+
 }
 
 pub struct Elves {

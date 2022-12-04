@@ -14,7 +14,7 @@ pub struct FileContents {
 
 impl FileContents {
     /// Parse the input file to retrieve each line and collect it into a vector
-    pub fn build(input_filepath: &str, split_delim: &str) -> Result <FileContents, Box<dyn Error>>
+    pub fn build(input_filepath: &str, split_delim: &str) -> Result<FileContents, Box<dyn Error>>
     {
         let contents = fs::read_to_string(input_filepath)?;
 
@@ -29,5 +29,17 @@ impl FileContents {
             split_contents: split_contents,
         })
     }
-}
 
+    pub fn split_line<'a>(input: &'a str, split_delim: &str) -> Vec<&'a str> 
+    {
+        input.split(split_delim).collect()
+    } 
+
+    pub fn split_into_i32(input: & str, split_delim: &str) -> Vec<i32> 
+    {
+        let str_vec: Vec<&str> = input.split(split_delim).collect();
+
+        str_vec.iter().map(|x| x.parse::<i32>().unwrap()).collect()
+    } 
+
+}

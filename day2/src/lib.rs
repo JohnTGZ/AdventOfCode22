@@ -1,40 +1,35 @@
 use aoc_common::FileContents;
 use std::collections::HashMap;
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_get_total_score_part1() {
+    fn setup() -> RPS {
         let test_input_filepath = "../input/day2/test_input.txt";
         let split_delim = "\n";
 
         let file_contents = 
             FileContents::build(test_input_filepath, split_delim)
                 .unwrap_or_else(|err| {
-                    eprintln!("Problem parsing file: {err}");
-                    panic!("Unable to parse file");
+                    panic!("Unable to parse file: {err}");
                 });
 
-        let rps = RPS::build(&file_contents).expect("Error building a RPS (Rock,Papers,Scissors) object");
+        RPS::build(&file_contents)
+            .expect("Error building a RPS (Rock,Papers,Scissors) object")
+    }
+
+    #[test]
+    fn test_get_total_score_part1() {
+        let rps = setup();
 
         assert_eq!(15, rps.get_total_score_part1())
     }
 
     #[test]
     fn test_get_total_score_part2() {
-        let test_input_filepath = "../input/day2/test_input.txt";
-        let split_delim = "\n";
-
-        let file_contents = 
-            FileContents::build(test_input_filepath, split_delim)
-                .unwrap_or_else(|err| {
-                    eprintln!("Problem parsing file: {err}");
-                    panic!("Unable to parse file");
-                });
-
-        let rps = RPS::build(&file_contents).expect("Error building a RPS (Rock,Papers,Scissors) object");
+        let rps = setup();
 
         assert_eq!(12, rps.get_total_score_part2())
     }
