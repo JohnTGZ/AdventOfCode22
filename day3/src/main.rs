@@ -7,5 +7,8 @@ fn main() {
 
     let rucksacks = Rucksack::build(test_input_filepath);
 
-    println!("Part 1: Total priority [{}]", Rucksack::get_total_priority(rucksacks));
+    println!("Part 1: Total priority [{}]", Rucksack::get_total_priority(&rucksacks));
+
+    println!("Part 2: Total priority [{}]", Rucksack::get_total_priority_part2(&rucksacks));
+
 }
