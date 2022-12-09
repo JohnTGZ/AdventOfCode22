@@ -8,7 +8,7 @@ fn main() {
     let split_delim = "\n";
 
     let file_contents = 
-        FileContents::build(input_filepath, split_delim)
+        FileContents::build(input_filepath, split_delim, -1, -1)
             .unwrap_or_else(|err| {
                 panic!("Unable to parse file: {err}");
             });
@@ -18,7 +18,4 @@ fn main() {
     println!("Part 1: Total fully-contained pairs [{}]", assignments.count_fully_contains());
 
     println!("Part 2: Total partially-contained pairs [{}]", assignments.count_partially_contains());
-    
-    // println!("Part 2: {}", _);
-
 }

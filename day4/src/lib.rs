@@ -1,6 +1,4 @@
 use aoc_common::FileContents;
-// use std::collections::HashMap;
-// use std::collections::HashSet;
 
 #[cfg(test)]
 mod tests {
@@ -11,7 +9,7 @@ mod tests {
         let split_delim = "\n";
 
         let file_contents = 
-            FileContents::build(test_input_filepath, split_delim)
+            FileContents::build(test_input_filepath, split_delim, -1, -1)
                 .unwrap_or_else(|err| {
                     panic!("Unable to parse file: {err}");
                 });

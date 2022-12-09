@@ -10,7 +10,7 @@ fn main() {
     let split_delim = "\n\n";
 
     let file_contents = 
-    FileContents::build(final_input_filepath, split_delim)
+    FileContents::build(final_input_filepath, split_delim, -1, -1)
         .unwrap_or_else(|err| {
             eprintln!("Problem parsing file: {err}");
             process::exit(1);

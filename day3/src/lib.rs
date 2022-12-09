@@ -84,7 +84,7 @@ impl Rucksack{
         let mut rucksacks: Vec<Rucksack> = Vec::new();
 
         let file_contents = 
-            FileContents::build(input_filepath, "\n")
+            FileContents::build(input_filepath, "\n", -1, -1)
                 .unwrap_or_else(|err| {
                     panic!("Unable to parse file: {err}");
                 });

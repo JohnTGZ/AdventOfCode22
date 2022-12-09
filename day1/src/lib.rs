@@ -10,7 +10,7 @@ mod tests {
         let split_delim = "\n\n";
 
         let file_contents = 
-            FileContents::build(test_input_filepath, split_delim)
+            FileContents::build(test_input_filepath, split_delim, -1, -1)
                 .unwrap_or_else(|err| {
                     panic!("Unable to parse file: {err}");
                 });
