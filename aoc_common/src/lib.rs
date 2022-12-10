@@ -6,8 +6,6 @@
 use std::error::Error;
 use std::fs;
 
-use std::ops::{Range, RangeFrom, RangeBounds};
-
 pub struct FileContents {
     pub input_filepath: String,
     pub contents: String,
