@@ -14,12 +14,6 @@ pub struct FileContents {
 
 impl FileContents {
     /// Parse the input file to retrieve each line and collect it into a vector
-    // pub fn build(input_filepath: &str, split_delim: &str, lines_to_read: Option<Range<usize>>) -> Result<FileContents, Box<dyn Error>>
-
-    // pub fn build<R>(input_filepath: &str, split_delim: &str, lines_to_read: Option<R>) 
-    // -> Result<FileContents, Box<dyn Error>>
-    // where 
-    //     R: RangeBounds<usize>
     pub fn build(input_filepath: &str, split_delim: &str, start: i32, end: i32) 
     -> Result<FileContents, Box<dyn Error>>
     {
