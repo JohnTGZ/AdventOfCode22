@@ -1,4 +1,3 @@
-// Day 7. I stopped giving a shit about making it tidy.
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
