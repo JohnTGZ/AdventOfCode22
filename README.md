@@ -1,5 +1,6 @@
 # AdventOfCode22
 Taking this christmas to learn Rust :D
+Please forgive the messy code. I lose the motivation to clean up after myself after solving the puzzle :P
 
 # Common library Bugs
 1. For the aoc_common FileContents::build, account for newline-terminated input.

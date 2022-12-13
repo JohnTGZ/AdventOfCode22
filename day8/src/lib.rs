@@ -51,19 +51,17 @@ mod tests {
         assert_eq!(grid.get((4,4)), &0);
     }
 
-    // #[test]
-    // fn test_count_trees() {
-    //     let grid = test_setup();
-    //     let mut hashset: HashSet<usize> = HashSet::new();
+    #[test]
+    fn test_count_trees() {
+        let grid = test_setup();
 
-    //     assert_eq!(grid.count_trees((0,0), Direction::RIGHT, &mut hashset), 2);
-    //     assert_eq!(grid.count_trees((2,0), Direction::DOWN, &mut hashset), 2);
-    //     assert_eq!(grid.count_trees((4,0), Direction::LEFT, &mut hashset), 2);
+        assert_eq!(grid.count_trees((0,0), Direction::RIGHT), 2);
+        assert_eq!(grid.count_trees((2,0), Direction::DOWN), 2);
+        assert_eq!(grid.count_trees((4,0), Direction::LEFT), 2);
 
-    //     assert_eq!(grid.count_trees((3,4), Direction::UP, &mut hashset), 1);
-    //     assert_eq!(grid.count_trees((4,4), Direction::LEFT, &mut hashset), 2);
-
-    // }
+        assert_eq!(grid.count_trees((3,4), Direction::UP), 1);
+        assert_eq!(grid.count_trees((4,4), Direction::LEFT), 2);
+    }
     
     #[test]
     fn test_count_forest(){
@@ -75,25 +73,48 @@ mod tests {
 
         // Left and right sides
         for i in 0..grid.height {
-            total_tree_count += grid.count_trees((0, i), Direction::RIGHT, &mut hashset);
-            total_tree_count += grid.count_trees((grid.width-1, i), Direction::LEFT, &mut hashset);
+            total_tree_count += grid.count_trees_without_duplicates((0, i), Direction::RIGHT, &mut hashset);
+            total_tree_count += grid.count_trees_without_duplicates((grid.width-1, i), Direction::LEFT, &mut hashset);
         }
 
         // Top and bottom sides
         for j in 0..grid.width {
-            total_tree_count += grid.count_trees((j, 0), Direction::DOWN, &mut hashset);
-            total_tree_count += grid.count_trees((j, grid.height-1), Direction::UP, &mut hashset);
-        }
-
-        for num in &hashset {
-            println!("{}", num);
+            total_tree_count += grid.count_trees_without_duplicates((j, 0), Direction::DOWN, &mut hashset);
+            total_tree_count += grid.count_trees_without_duplicates((j, grid.height-1), Direction::UP, &mut hashset);
         }
 
         assert_eq!(total_tree_count, 21);
     }
 
+    #[test]
+    fn test_scenic_spots(){
+        let grid = test_setup();
+
+        assert_eq!(grid.get_scenic_score(7), 4);
+        assert_eq!(grid.get_scenic_score(17), 8);
+        assert_eq!(grid.get_scenic_score(16), 1);
+        assert_eq!(grid.get_scenic_score(16), 1);
+    }
+
+    #[test]
+    fn test_max_scenic_score(){
+        let grid = test_setup();
+
+        let mut max_scenic_score = 0;
+
+        for i in 0..(grid.height*grid.width) {
+            let scenic_score = grid.get_scenic_score(i);
+            if scenic_score >= max_scenic_score {
+                max_scenic_score = scenic_score;
+            }
+        }
+
+        assert_eq!(max_scenic_score, 8);
+    }
+
 }
 
+#[derive(Debug)]
 pub enum Direction {
     UP,
     DOWN,
@@ -148,30 +169,27 @@ impl Grid{
         &self.cells[self.xy_to_idx(xy)]
     }
 
-    pub fn count_trees(&self, origin: (usize, usize), direction: Direction, hashset: &mut HashSet<usize>) -> u32 {
+    pub fn count_trees_without_duplicates(&self, origin: (usize, usize), direction: Direction, hashset: &mut HashSet<usize>) -> u32 {
         let mut step_idx: i16 = 0;
-        let mut length = 0;
+        let mut length: i16 = 0;
 
-        // UP = (0, -1),
-        // DOWN = (0, 1),
-        // LEFT = (-1, 0),
-        // RIGHT = (1, 0),
+        // Try implementing the direction stepping here
         match direction {
             Direction::UP => { 
                 step_idx = -(self.width as i16);
-                length = self.height;
+                length = i16::try_from(origin.1 ).unwrap();
             },
             Direction::DOWN => {
                 step_idx = self.width as i16;
-                length = self.height;
+                length = i16::try_from(self.height - origin.1 ).unwrap();
             },
             Direction::LEFT => {
                 step_idx = -1;
-                length = self.width;
+                length = i16::try_from(origin.0).unwrap();
             },
             Direction::RIGHT => {
                 step_idx = 1;
-                length = self.width;
+                length = i16::try_from(self.width - origin.0 ).unwrap();
             },
         }
 
@@ -184,7 +202,7 @@ impl Grid{
             let height = self.cells[usize::try_from(cur_idx).unwrap()] as i8;
 
             if height > max_height_seen {
-                println!("Saw tree {} of height {}", cur_idx, height);
+                // println!("Saw tree {} of height {}", cur_idx, height);
                 max_height_seen = height;
                 if hashset.insert(cur_idx as usize) {
                     tree_count += 1;
@@ -192,7 +210,7 @@ impl Grid{
                 // Tree is seen
             }
             else {
-                println!("Didnt see tree {} of height {}", cur_idx, height);
+                // println!("Didnt see tree {} of height {}", cur_idx, height);
                 // Tree is not seen
             }
             cur_idx += step_idx;
@@ -200,6 +218,142 @@ impl Grid{
 
         tree_count
     }
+
+    pub fn count_trees(&self, origin: (usize, usize), direction: Direction) -> u32 {
+        let step_idx;
+        let length;
+
+        println!("Direction: {:?}", direction);
+
+        // Try implementing the direction stepping here
+        match direction {
+            Direction::UP => { 
+                step_idx = -(self.width as i16);
+                length = i16::try_from(origin.1).unwrap();
+            },
+            Direction::DOWN => {
+                step_idx = self.width as i16;
+                length = i16::try_from(self.height - origin.1 - 1).unwrap();
+            },
+            Direction::LEFT => {
+                step_idx = -1;
+                length = i16::try_from(origin.0).unwrap();
+            },
+            Direction::RIGHT => {
+                step_idx = 1;
+                length = i16::try_from(self.width - origin.0 -1).unwrap();
+            },
+        }
+
+        let mut cur_idx: i16 = self.xy_to_idx(origin) as i16;
+
+        let mut max_height_seen: i8 = -1;
+        let mut tree_count:u32 = 0;
+
+        for _ in 0..length {
+            let height = self.cells[usize::try_from(cur_idx).unwrap()] as i8;
+
+            if height > max_height_seen {
+                max_height_seen = height;
+
+                // Tree is seen
+                tree_count += 1;
+                // println!("  Saw tree {} Max {}", height, max_height_seen);
+            }
+            else {
+                // Tree is not seen
+                // println!("  Didn't see tree {}, Max {}", height, max_height_seen);
+            }
+
+            cur_idx += step_idx;
+        }
+ 
+        tree_count
+    }
+
+
+    pub fn count_trees_scenic(&self, origin: (usize, usize), direction: Direction) -> u32 {
+        let step_idx;
+        let length;
+
+        println!("Direction: {:?}", direction);
+
+        // Try implementing the direction stepping here
+        match direction {
+            Direction::UP => { 
+                step_idx = -(self.width as i16);
+                length = i16::try_from(origin.1).unwrap();
+            },
+            Direction::DOWN => {
+                step_idx = self.width as i16;
+                length = i16::try_from(self.height - origin.1 - 1).unwrap();
+            },
+            Direction::LEFT => {
+                step_idx = -1;
+                length = i16::try_from(origin.0).unwrap();
+            },
+            Direction::RIGHT => {
+                step_idx = 1;
+                length = i16::try_from(self.width - origin.0 -1).unwrap();
+            },
+        }
+
+        let mut cur_idx: i16 = self.xy_to_idx(origin) as i16;
+        let origin_height = self.cells[usize::try_from(cur_idx).unwrap()] as i8;
+
+        let mut max_height_seen: i8 = -1;
+        let mut tree_count:u32 = 0;
+
+        // Don't start from the current tree
+        cur_idx += step_idx;
+
+        for _ in 0..length {
+            let height = self.cells[usize::try_from(cur_idx).unwrap()] as i8;
+
+            // If tree height is more then max height seen, it can be seen
+            if height >= max_height_seen{
+                max_height_seen = height;
+                tree_count += 1;
+                println!("  Saw tree {} Max {}", height, max_height_seen);
+            }
+            else if max_height_seen < origin_height && height < max_height_seen{
+                tree_count += 1;
+                println!("  Saw tree {} Max {}", height, max_height_seen);
+            }
+            else {
+                println!("  Didn't see tree {}, Max {}", height, max_height_seen);
+            }
+
+            //Nothing more to see as soon as max height matches origin tree height
+            if max_height_seen >= origin_height { 
+                println!("  Nothing more to see!");
+                break;
+            }
+
+            cur_idx += step_idx;
+        }
+        tree_count
+    }
+
+    pub fn get_scenic_score(&self, idx: usize) -> u32 {
+        let mut viewing_dist_arr:[u32; 4] = [0; 4];
+
+        println!("======{}=======", idx);
+
+        viewing_dist_arr[0] = self.count_trees_scenic(self.idx_to_xy(idx), Direction::UP);
+        viewing_dist_arr[1] = self.count_trees_scenic(self.idx_to_xy(idx), Direction::LEFT);
+        viewing_dist_arr[2] = self.count_trees_scenic(self.idx_to_xy(idx), Direction::DOWN);
+        viewing_dist_arr[3] = self.count_trees_scenic(self.idx_to_xy(idx), Direction::RIGHT);
+ 
+        let scenic_score = viewing_dist_arr.iter().fold(1, |acc, x| acc * x);
+
+        println!("Scenic score: {} = {} * {} * {} * {}", 
+        scenic_score, viewing_dist_arr[0], viewing_dist_arr[1], viewing_dist_arr[2], viewing_dist_arr[3]);
+
+        println!("=============");
+
+        scenic_score
+    }   
 
 }   
 
