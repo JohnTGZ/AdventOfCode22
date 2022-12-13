@@ -23,4 +23,7 @@ Please forgive the messy code. I lose the motivation to clean up after myself af
 Day 7 was much more challenging. Im pretty sure there is a better way to solve the puzzle without having to construct an actual file directory system you could crawl through. Nevertheless, I did it to practice using smart pointers :)
 
 ## Day 8 
-Having some experience with robotics costmap helps with thinking about how to represent and store the forest height map.
+Having some experience with robotics costmap helps with thinking about how to represent and store the forest height map. It was a good challenge :) Just had to make sure I read the rules properly about which trees could or could not be seen.
+
+## Day 9
+TODO: Add uncrustify as a linting tool
