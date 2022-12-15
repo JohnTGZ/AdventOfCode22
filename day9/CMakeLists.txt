@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
+project(aoc22)
 
 set (CMAKE_CXX_STANDARD 17)
 
-project(raytracing_weekend)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+FetchContent_MakeAvailable(googletest)
 
 include_directories(include)
 
@@ -23,3 +29,16 @@ target_include_directories(day9
 target_link_libraries(day9
     aoc_common
 )
+
+enable_testing()
+add_executable(
+    test_day9
+    tests/test_day9.cpp
+)
+target_link_libraries(
+    test_day9
+    GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(test_day9)

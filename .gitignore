@@ -1,6 +1,9 @@
+**/.vscode
+
 **/target
 
 *.a
+**/build
 **/CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
