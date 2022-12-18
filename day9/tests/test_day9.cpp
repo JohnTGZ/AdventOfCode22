@@ -85,3 +85,27 @@ TEST_F(GridMapTest, NumVisited) {
 
     ASSERT_EQ(gridmap_->get_num_visited(), 13);
 }
+
+
+class GridMapTestPart2 : public ::testing::Test {
+    protected:
+        void SetUp() override {
+            logger_ = std::make_shared<Logger>(LOG_LEVEL::DEBUG);
+            fileparser_ = std::make_unique<FileParser>("../../input/day9/test_input.txt", logger_);
+            lines_ = fileparser_->split('\n');
+
+            gridmap_ = std::make_unique<GridMap>(26,21);
+            gridmap_->init(Position2D(11,15));
+        }
+
+    // void TearDown() override {}
+
+    std::shared_ptr<Logger> logger_;
+    std::unique_ptr<GridMap> gridmap_;
+    std::unique_ptr<FileParser> fileparser_;
+    std::vector<std::string> lines_;
+};
+
+TEST_F(GridMapTestPart2, MoveTailIndividual) {
+    
+}

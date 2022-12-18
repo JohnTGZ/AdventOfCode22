@@ -281,6 +281,12 @@ std::ostream &operator << (std::ostream& os, const Vector2D &vec)
     return os; 
 }
 
+struct Cell {
+    std::string parent_id; // ID of cell to follow
+    Position2D position;
+    STATE state;
+};
+
 class GridMap {
 public:
 
@@ -295,27 +301,28 @@ public:
      * @return true 
      * @return false 
      */
-    bool init(const Position2D& origin) {
+    bool init(const Position2D& origin, const unsigned int& num_tail) {
         this->origin_ = origin;
 
         // Vist the origin
         this->visit(xy_to_idx(origin_));
 
-        // TODO Make add_knot a lambda
-        return this->add_knot(this->origin_, "H", STATE::HEAD)
-            && this->add_knot(this->origin_, "T", STATE::TAIL);
-    }
+        auto assign_state = [&](const std::string& id, const Position2D& pos, const State& state) {
+            id_map_[id] = std::make_pair(pos, state);
+            this->assign(id_map_[id].first, id_map_[id].second); 
+            // Assign parent cell
+        };
 
-    /**
-     * @brief Initialize a STATE value at the origin point
-     * 
-     * @param state 
-     * @return true 
-     * @return false 
-     */
-    bool add_knot(const Position2D& position, const std::string& id, const STATE& state){
-        id_map_[id] = std::make_pair(position, state);
-        return this->assign(id_map_[id].first, id_map_[id].second); 
+        // Add head
+        assign_state("H", this->origin_, STATE::HEAD);
+
+        // Add tails
+        for (unsigned int i =0; i < num_tail; i++)
+        {
+            assign_state("T", this->origin_, STATE::TAIL);
+        }
+
+        return true;
     }
 
     bool move_to(const std::string& id, const Position2D& position) {
@@ -343,9 +350,59 @@ public:
      * @return true 
      * @return false 
      */
+    bool move_part2(const std::string& id, const std::string& direction, const int& magnitude) {
+
+        for (int i = 0; i < magnitude; i++){
+
+            // Iterate through the entire map
+            for (auto itr = id_map_.begin(); itr != id_map_.end(); itr++) {
+
+                const std::string& id = "H";
+                // Save previous position of the HEAD
+                auto prev_pos = (*this->get_cell(id)).first;
+
+                std::cout << "Got previous position:" << prev_pos << "\n";
+                move(id, Vector2D(direction));
+
+
+
+            }
+
+
+
+
+
+            // Get direction vector
+            auto t_h_vect = Vector2D(
+                id_map_["H"].first.x - id_map_["T"].first.x, 
+                id_map_["H"].first.y - id_map_["T"].first.y);
+
+            // TODO Check if tail is adjacent to head (includes diagonals)
+            if (t_h_vect.magnitude() <= 1.42){
+                // std::cout << "Tail and Head is adjacent \n";
+                continue;
+            }
+            std::cout << "Moving T to " << prev_h_pos << "\n";
+
+            this->visit(xy_to_idx(prev_h_pos));
+            // Move the tail to the previous position of H
+            move_to("T", prev_h_pos);
+        }
+        return true;
+    }
+
+    /**
+     * @brief Move the current 
+     * 
+     * @param direction 
+     * @param value 
+     * @return true 
+     * @return false 
+     */
     bool move(const std::string& id, const std::string& direction, const int& magnitude) {
 
         for (int i = 0; i < magnitude; i++){
+
             // Save previous position of the HEAD
             auto prev_h_pos = (*this->get_cell("H")).first;
 
@@ -474,7 +531,7 @@ private:
     // Oorigin is at bottom left of the grid map
     Position2D origin_;
 
-    std::unordered_map<std::string, std::pair<Position2D, STATE>> id_map_;
+    std::unordered_map<std::string, Cell> id_map_;
 
     std::unordered_set<long> visited_;
 
