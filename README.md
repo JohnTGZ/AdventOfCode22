@@ -5,9 +5,10 @@ Please forgive the messy code. I lose the motivation to clean up after myself af
 # Common library Bugs
 1. For the aoc_common FileContents::build, account for newline-terminated input.
 
-# Days
+# Comments on each day
 
 ## Day 1
+Not challenging, but this being my first puzzle to solve in Rust, it was kind of painful to wrestle with the borrow checker, hope this improves over time
 
 ## Day 2
 

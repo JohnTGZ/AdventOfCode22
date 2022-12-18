@@ -282,7 +282,10 @@ std::ostream &operator << (std::ostream& os, const Vector2D &vec)
 }
 
 struct Cell {
-    std::string parent_id; // ID of cell to follow
+    Cell(std::shared_ptr<Cell> parent_cell, Position2D position, STATE state)
+    : parent_cell(parent_cell), position(position), state(state) {}
+
+    std::shared_ptr<Cell> parent_cell; // ID of cell to follow
     Position2D position;
     STATE state;
 };
@@ -292,7 +295,7 @@ public:
 
     GridMap(long width, long height):
     width_(width), height_(height), size_(width*height), origin_(0, 0) {
-        cells_.assign(width_*height_, STATE::FREE);
+        // cells_.assign(width_*height_, STATE::FREE);
     }
 
     /**
@@ -307,87 +310,27 @@ public:
         // Vist the origin
         this->visit(xy_to_idx(origin_));
 
-        auto assign_state = [&](const std::string& id, const Position2D& pos, const State& state) {
-            id_map_[id] = std::make_pair(pos, state);
-            this->assign(id_map_[id].first, id_map_[id].second); 
-            // Assign parent cell
+        auto add_cell = [&](
+            const std::string& id, 
+            const std::string& parent_id,
+            const Position2D& pos, 
+            const STATE& state
+            ) {
+            auto parent_cell = this->get_cell(id);
+            id_map_[id] = std::make_shared<Cell>(parent_cell, pos, state);
         };
 
         // Add head
-        assign_state("H", this->origin_, STATE::HEAD);
+        add_cell("C0", "", this->origin_, STATE::HEAD);
 
         // Add tails
-        for (unsigned int i =0; i < num_tail; i++)
+        for (unsigned int i = 1; i < num_tail+1; i++)
         {
-            assign_state("T", this->origin_, STATE::TAIL);
+            add_cell("C"+std::to_string(i), "C"+std::to_string(i-1), this->origin_, STATE::TAIL);
         }
 
-        return true;
-    }
+        print_map();
 
-    bool move_to(const std::string& id, const Position2D& position) {
-        this->assign(id_map_[id].first, STATE::FREE); 
-
-        id_map_[id].first = position;
-
-        const long idx = this->xy_to_idx(id_map_[id].first);
-
-        if (idx >= size_ or idx < 0){
-            throw std::out_of_range(
-                (std::ostringstream{} << "Gridmap index " << idx << " out of range. Size " << size_).str());
-            return false;
-        }
-
-        this->assign(id_map_[id].first, id_map_[id].second); 
-        return true;
-    }
-
-    /**
-     * @brief Move the current 
-     * 
-     * @param direction 
-     * @param value 
-     * @return true 
-     * @return false 
-     */
-    bool move_part2(const std::string& id, const std::string& direction, const int& magnitude) {
-
-        for (int i = 0; i < magnitude; i++){
-
-            // Iterate through the entire map
-            for (auto itr = id_map_.begin(); itr != id_map_.end(); itr++) {
-
-                const std::string& id = "H";
-                // Save previous position of the HEAD
-                auto prev_pos = (*this->get_cell(id)).first;
-
-                std::cout << "Got previous position:" << prev_pos << "\n";
-                move(id, Vector2D(direction));
-
-
-
-            }
-
-
-
-
-
-            // Get direction vector
-            auto t_h_vect = Vector2D(
-                id_map_["H"].first.x - id_map_["T"].first.x, 
-                id_map_["H"].first.y - id_map_["T"].first.y);
-
-            // TODO Check if tail is adjacent to head (includes diagonals)
-            if (t_h_vect.magnitude() <= 1.42){
-                // std::cout << "Tail and Head is adjacent \n";
-                continue;
-            }
-            std::cout << "Moving T to " << prev_h_pos << "\n";
-
-            this->visit(xy_to_idx(prev_h_pos));
-            // Move the tail to the previous position of H
-            move_to("T", prev_h_pos);
-        }
         return true;
     }
 
@@ -400,32 +343,38 @@ public:
      * @return false 
      */
     bool move(const std::string& id, const std::string& direction, const int& magnitude) {
-
         for (int i = 0; i < magnitude; i++){
+            
+            for (int i = 0; i < id_map_.size() -1; i++) {
+                auto parent_cell = this->get_cell("C"+std::to_string(i));
+                auto child_cell = this->get_cell("C"+std::to_string(i+1));
 
-            // Save previous position of the HEAD
-            auto prev_h_pos = (*this->get_cell("H")).first;
+                const auto parent_prev_pos = parent_cell->position;
+                std::cout << "Previous h position:" << parent_prev_pos << "\n";
+                
+                move_in_dir(parent_cell, Vector2D(direction));
 
-            std::cout << "Got previous h position:" << prev_h_pos << "\n";
+                auto t_h_vect = Vector2D(
+                    parent_cell->position.x - child_cell->position.x, 
+                    parent_cell->position.y - child_cell->position.y);
 
-            move(id, Vector2D(direction));
+                // If tail is adjacent to head (includes diagonals), skip movement
+                if (t_h_vect.magnitude() <= 1.42){
+                    // std::cout << "Tail and Head is adjacent \n";
+                    continue;
+                }
 
-            // Get direction vector
-            auto t_h_vect = Vector2D(
-                id_map_["H"].first.x - id_map_["T"].first.x, 
-                id_map_["H"].first.y - id_map_["T"].first.y);
+                std::cout << "Moving " << "C"+std::to_string(i+1) << " to " << parent_prev_pos << "\n";
 
-            // TODO Check if tail is adjacent to head (includes diagonals)
-            if (t_h_vect.magnitude() <= 1.42){
-                // std::cout << "Tail and Head is adjacent \n";
-                continue;
+                // Move the child to the previous position of the parent
+                move_to_pos(child_cell, parent_prev_pos);
+                
+                // Mark as visited
+                this->visit(xy_to_idx(parent_prev_pos));
             }
-            std::cout << "Moving T to " << prev_h_pos << "\n";
 
-            this->visit(xy_to_idx(prev_h_pos));
-            // Move the tail to the previous position of H
-            move_to("T", prev_h_pos);
         }
+
         return true;
     }
 
@@ -437,12 +386,10 @@ public:
      * @return true 
      * @return false 
      */
-    bool move(const std::string& id, const Vector2D& dir_vect) {
-        this->assign(id_map_[id].first, STATE::FREE); 
-
-        id_map_[id].first.move(dir_vect.x, dir_vect.y);
+    bool move_in_dir(std::shared_ptr<Cell> cell, const Vector2D& dir_vect) {
+        cell->position.move(dir_vect.x, dir_vect.y);
         
-        const long idx = this->xy_to_idx(id_map_[id].first);
+        const long idx = this->xy_to_idx(cell->position);
 
         if (idx >= size_ or idx < 0){
             throw std::out_of_range(
@@ -450,7 +397,19 @@ public:
             return false;
         }
 
-        this->assign(id_map_[id].first, id_map_[id].second); 
+        return true;
+    }
+
+    bool move_to_pos(std::shared_ptr<Cell> cell, const Position2D& position) {
+        cell->position = position;
+
+        const long idx = this->xy_to_idx(cell->position);
+
+        if (idx >= size_ or idx < 0){
+            throw std::out_of_range(
+                (std::ostringstream{} << "Gridmap index " << idx << " out of range. Size " << size_).str());
+            return false;
+        }
 
         return true;
     }
@@ -496,15 +455,22 @@ public:
         );
     }
 
-    std::optional<std::pair<Position2D, STATE>> get_cell(const std::string& id){
+    std::shared_ptr<Cell> get_cell(const std::string& id){
         if (id_map_.find(id) != id_map_.end()){
             return id_map_[id];
         }
-        return {};
+        return nullptr;
     }
 
     std::size_t get_num_visited(){
         return visited_.size();
+    }
+
+    void print_map() {
+        std::cout << "Printing map \n";
+        for (auto cell : id_map_ ){
+            std::cout << "ID: " << cell.first << ", Cell_position: " << cell.second->position << "\n";
+        }
     }
 
 private:
@@ -531,9 +497,8 @@ private:
     // Oorigin is at bottom left of the grid map
     Position2D origin_;
 
-    std::unordered_map<std::string, Cell> id_map_;
+    std::unordered_map<std::string, std::shared_ptr<Cell>> id_map_;
 
     std::unordered_set<long> visited_;
-
 };
 

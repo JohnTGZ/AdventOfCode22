@@ -29,13 +29,13 @@ int main(int argc, char** argv){
 
     auto gridmap = GridMap(width,height);
     
-    gridmap.init(Position2D(-min_pos.x, -min_pos.y));
+    gridmap.init(Position2D(-min_pos.x, -min_pos.y), 1);
 
     for (int i = 0; i < lines.size(); i++){
         const auto inst = FileParser::split(lines[i], ' ');
         std::cout << lines[i] << std::endl;
         gridmap.move(
-            "H", inst[0], std::stoi(inst[1].c_str()));
+            "C0", inst[0], std::stoi(inst[1].c_str()));
     }
 
     std::cout << "Part 1: No. of cells visited by tail: " << gridmap.get_num_visited() << std::endl;
