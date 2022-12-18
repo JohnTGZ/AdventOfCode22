@@ -34,8 +34,8 @@ int main(int argc, char** argv){
     for (int i = 0; i < lines.size(); i++){
         const auto inst = FileParser::split(lines[i], ' ');
         std::cout << lines[i] << std::endl;
-        gridmap.move(
-            "C0", inst[0], std::stoi(inst[1].c_str()));
+        gridmap.move_all_cells(
+            inst[0], std::stoi(inst[1].c_str()));
     }
 
     std::cout << "Part 1: No. of cells visited by tail: " << gridmap.get_num_visited() << std::endl;

@@ -28,3 +28,6 @@ Having some experience with robotics costmap helps with thinking about how to re
 
 ## Day 9
 TODO: Add uncrustify as a linting tool
+Solved part 1 but didn't manage to solve part 2.
+
+## Day 10

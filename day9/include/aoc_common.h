@@ -257,7 +257,7 @@ struct Vector2D {
         return *this = std::move(other);
     }
 
-    float magnitude(){
+    float magnitude() const{
         return std::hypot(x,y);
     }
 
@@ -342,36 +342,48 @@ public:
      * @return true 
      * @return false 
      */
-    bool move(const std::string& id, const std::string& direction, const int& magnitude) {
+    bool move_all_cells(const std::string& direction, const int& magnitude) {
         for (int i = 0; i < magnitude; i++){
+            std::cout << "Magnitude " << i << "\n";
             
-            for (int i = 0; i < id_map_.size() -1; i++) {
-                auto parent_cell = this->get_cell("C"+std::to_string(i));
-                auto child_cell = this->get_cell("C"+std::to_string(i+1));
+            ///////////
+            // FIRST CELL
+            ///////////
+            Position2D parent_previous_pos = this->get_cell("C0")->position;
 
-                const auto parent_prev_pos = parent_cell->position;
-                std::cout << "Previous h position:" << parent_prev_pos << "\n";
+            for (int i = 0; i < id_map_.size() - 1; i++) {
+                std::cout << "==========\n";
+
+                const std::string& parent_id = "C"+std::to_string(i);
+                const std::string& child_id = "C"+std::to_string(i+1);
+
+                auto parent_cell = this->get_cell(parent_id);
+                auto child_cell = this->get_cell(child_id);
                 
-                move_in_dir(parent_cell, Vector2D(direction));
+                if (i == 0){
+                    std::cout << "Previous H position:" << parent_previous_pos << "\n";
+                    move_in_dir(parent_cell, Vector2D(direction));
+                }
 
-                auto t_h_vect = Vector2D(
+                const auto& t_h_vect = Vector2D(
                     parent_cell->position.x - child_cell->position.x, 
                     parent_cell->position.y - child_cell->position.y);
 
-                // If tail is adjacent to head (includes diagonals), skip movement
-                if (t_h_vect.magnitude() <= 1.42){
-                    // std::cout << "Tail and Head is adjacent \n";
-                    continue;
+                if (! (t_h_vect.magnitude() <= 1.42) ){
+                    auto child_new_pos = parent_previous_pos;
+
+                    parent_previous_pos = child_cell->position;
+
+                    move_to_pos(child_cell, child_new_pos);
+                    std::cout << "Moved " << child_id << " to " << child_cell->position << "\n";
+
+                    this->visit(xy_to_idx(child_new_pos));
                 }
 
-                std::cout << "Moving " << "C"+std::to_string(i+1) << " to " << parent_prev_pos << "\n";
+                // std::cout << "Manitude of TH Vect: "<< t_h_vect.magnitude() << "\n";
 
-                // Move the child to the previous position of the parent
-                move_to_pos(child_cell, parent_prev_pos);
-                
-                // Mark as visited
-                this->visit(xy_to_idx(parent_prev_pos));
             }
+            std::cout << "==========\n";
 
         }
 
