@@ -3,7 +3,7 @@ use std::io::{self, Write};
 
 fn main() {
     let input_filepath = "input/day10/final_input.txt";
-    
+
     let contents: Vec<String> = fs::read_to_string(input_filepath)
         .unwrap()
         .split("\n")
@@ -14,40 +14,38 @@ fn main() {
 
     let mut X_val = 1;
     let mut cycle_no = 0;
-    let mut current_cmd_cycles_left  = 0; //Flag to wait for n cycles
+    let mut current_cmd_cycles_left = 0; //Flag to wait for n cycles
     let mut temp_val_to_add = 0;
 
     let mut signal_strength_sum = 0;
 
     loop {
-        if (cycle_no-20) % 40 == 0 {
+        if (cycle_no - 20) % 40 == 0 {
             signal_strength_sum += cycle_no * X_val;
         }
 
         if current_cmd_cycles_left > 0 {
             current_cmd_cycles_left -= 1;
-        }
-        else {
+        } else {
             X_val += temp_val_to_add;
             temp_val_to_add = 0;
 
-            if let Some(line) = lines.next(){
+            if let Some(line) = lines.next() {
                 let mut cmds = line.split(" ").into_iter();
                 match cmds.next() {
                     Some("noop") => {
                         current_cmd_cycles_left = 0;
-                    },
+                    }
                     Some("addx") => {
                         temp_val_to_add = cmds.next().unwrap().parse::<i32>().unwrap();
 
                         current_cmd_cycles_left = 1;
-                    },
+                    }
                     _ => {
                         write!(io::stdout(), "Invalid command \n").unwrap();
                     }
                 };
-            }
-            else {
+            } else {
                 // End of input
                 write!(io::stdout(), "End of output \n").unwrap();
                 break;
@@ -73,13 +71,12 @@ fn main() {
 
     loop {
         if cycle_no > 0 {
-            let cycle_pos = cycle_no - row * 40 - 1 ;
+            let cycle_pos = cycle_no - row * 40 - 1;
 
             // If position of sprite is within the cycle number
-            if ((X_val-1)..=(X_val + 1)).contains(&cycle_pos) {
+            if ((X_val - 1)..=(X_val + 1)).contains(&cycle_pos) {
                 crt_display_row += "#";
-            } 
-            else {
+            } else {
                 crt_display_row += ".";
             }
 
@@ -125,6 +122,4 @@ fn main() {
         // Increment cycle
         cycle_no += 1;
     }
-
-
 }
