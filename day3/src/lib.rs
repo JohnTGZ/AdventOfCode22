@@ -32,10 +32,8 @@ mod tests {
         assert_eq!(Some('s'), rucksacks[5].get_common_letter());
     }
 
-
     #[test]
     fn test_priority() {
-
         assert_eq!(1, Rucksack::get_priority_score(&'a'));
         assert_eq!(26, Rucksack::get_priority_score(&'z'));
         assert_eq!(16, Rucksack::get_priority_score(&'p'));
@@ -59,10 +57,15 @@ mod tests {
     fn test_common_letter_3_bags() {
         let rucksacks = setup();
 
-        assert_eq!(Some('r'), Rucksack::get_common_letter_n_bags(&rucksacks[0..3]));
-        assert_eq!(Some('Z'), Rucksack::get_common_letter_n_bags(&rucksacks[3..6]));
+        assert_eq!(
+            Some('r'),
+            Rucksack::get_common_letter_n_bags(&rucksacks[0..3])
+        );
+        assert_eq!(
+            Some('Z'),
+            Rucksack::get_common_letter_n_bags(&rucksacks[3..6])
+        );
     }
-    
 
     #[test]
     fn test_total_priority_part2() {
@@ -70,29 +73,27 @@ mod tests {
 
         assert_eq!(70, Rucksack::get_total_priority_part2(&rucksacks));
     }
-
 }
 
-pub struct Rucksack{
+pub struct Rucksack {
     both: String,
     first: String,
     second: String,
 }
 
-impl Rucksack{
-    pub fn build(input_filepath: &str) -> Vec<Rucksack>{
+impl Rucksack {
+    pub fn build(input_filepath: &str) -> Vec<Rucksack> {
         let mut rucksacks: Vec<Rucksack> = Vec::new();
 
-        let file_contents = 
-            FileContents::build(input_filepath, "\n", -1, -1)
-                .unwrap_or_else(|err| {
-                    panic!("Unable to parse file: {err}");
-                });
-        
-        for line in file_contents.split_contents{
-            let halfway_point = line.len()/2;
+        let file_contents =
+            FileContents::build(input_filepath, "\n", -1, -1).unwrap_or_else(|err| {
+                panic!("Unable to parse file: {err}");
+            });
+
+        for line in file_contents.split_contents {
+            let halfway_point = line.len() / 2;
             let compartments = line.split_at(halfway_point);
-            rucksacks.push(Rucksack{
+            rucksacks.push(Rucksack {
                 both: line.clone(),
                 first: compartments.0.to_string(),
                 second: compartments.1.to_string(),
@@ -102,19 +103,17 @@ impl Rucksack{
         rucksacks
     }
 
-    pub fn get_priority_score(letter: &char) -> u32{
+    pub fn get_priority_score(letter: &char) -> u32 {
         let unicode_val = *letter as u32;
 
         let lower_case = 65..91;
         let upper_case = 97..123;
         if lower_case.contains(&unicode_val) {
             return unicode_val - 38;
-        }
-        else if upper_case.contains(&unicode_val){
+        } else if upper_case.contains(&unicode_val) {
             return unicode_val - 96;
-        }
-        else {
-            return 0
+        } else {
+            return 0;
         }
     }
 
@@ -130,7 +129,7 @@ impl Rucksack{
             match first_comp_hashmap.get(&letter) {
                 Some(&_) => {
                     return Some(letter);
-                }, 
+                }
                 _ => (),
             }
         }
@@ -145,7 +144,7 @@ impl Rucksack{
         // Iterate through first rucksack, then using the
         // same hashmap, update the count only for letters that exist
         // in the hashmap already. Do the same for the third rucksack
-        // Iterate through the hashmap afterwards and only retrieve the 
+        // Iterate through the hashmap afterwards and only retrieve the
         // key with the value of 3.
 
         for letter in rucksacks[0].both.chars() {
@@ -158,11 +157,11 @@ impl Rucksack{
             for letter in rucksack.both.chars() {
                 match char_count_hashmap.get_mut(&letter) {
                     Some(value) => {
-                        if !current_rucksack_keys.contains(&letter){
+                        if !current_rucksack_keys.contains(&letter) {
                             *value += 1
                         }
-                    },
-                    _ => ()
+                    }
+                    _ => (),
                 }
                 current_rucksack_keys.insert(letter);
             }
@@ -179,28 +178,26 @@ impl Rucksack{
 
     pub fn get_total_priority(rucksacks: &Vec<Rucksack>) -> u64 {
         let mut total_priority: u64 = 0;
-        for rucksack in rucksacks{
-            total_priority += u64::from(
-                Rucksack::get_priority_score(
-                    &rucksack.get_common_letter().expect("No common letter")))
+        for rucksack in rucksacks {
+            total_priority += u64::from(Rucksack::get_priority_score(
+                &rucksack.get_common_letter().expect("No common letter"),
+            ))
         }
 
         total_priority
-    } 
+    }
 
     pub fn get_total_priority_part2(rucksacks: &Vec<Rucksack>) -> u64 {
         let mut total_priority: u64 = 0;
 
         // Split rucksack into groups of 3
-        for idx in (0..rucksacks.len()-1).step_by(3) {
-            total_priority +=   u64::from(Rucksack::get_priority_score(
-                                    &Rucksack::get_common_letter_n_bags(&rucksacks[idx..idx+3])
-                                        .expect("Common letter not found")));
+        for idx in (0..rucksacks.len() - 1).step_by(3) {
+            total_priority += u64::from(Rucksack::get_priority_score(
+                &Rucksack::get_common_letter_n_bags(&rucksacks[idx..idx + 3])
+                    .expect("Common letter not found"),
+            ));
         }
 
         total_priority
-    } 
-
-
+    }
 }
-

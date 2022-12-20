@@ -1,6 +1,6 @@
-use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use aoc_common::FileContents;
 
@@ -8,7 +8,7 @@ use aoc_common::FileContents;
 mod tests {
     use super::*;
 
-    fn setup(input_file: &str) -> HashMap<String, u32>{
+    fn setup(input_file: &str) -> HashMap<String, u32> {
         // Initialize root "/"
         let root_tree = Tree::make_root_dir("/");
         let mut directory = Directory::build(&root_tree);
@@ -16,15 +16,14 @@ mod tests {
         let test_input_filepath = input_file;
         let split_delim = "\n";
 
-        let file_contents = 
-            FileContents::build(test_input_filepath, split_delim, -1, -1)
-                .unwrap_or_else(|err| {
-                    panic!("Unable to parse file: {err}");
-                });
-        
-        let mut prev_cmd = ""; 
+        let file_contents = FileContents::build(test_input_filepath, split_delim, -1, -1)
+            .unwrap_or_else(|err| {
+                panic!("Unable to parse file: {err}");
+            });
 
-        for line in &file_contents.split_contents{
+        let mut prev_cmd = "";
+
+        for line in &file_contents.split_contents {
             // Split line further to distinguish between input and output
             let words: Vec<&str> = line.split(" ").collect();
 
@@ -33,80 +32,74 @@ mod tests {
                     match words[1] {
                         "cd" => {
                             match words[2] {
-                                "/" => {
-                                    directory.move_dir_to_root()
-                                },
+                                "/" => directory.move_dir_to_root(),
                                 ".." => {
                                     directory.move_dir_up();
-                                },
+                                }
                                 dir_name => {
                                     let dir_name_resolved = dir_name.to_owned();
                                     directory.add_dir(&dir_name_resolved);
                                     directory.move_dir_to(&dir_name_resolved);
                                 }
                             };
-                        },
+                        }
                         "ls" => {
                             // Do nothing here
-                        },
+                        }
                         _ => {
                             panic!("Invalid command")
                         }
                     };
                     prev_cmd = words[1];
-                },
-                _ => {
-                    match prev_cmd {
-                        "cd" => {
-                            panic!("'cd' is not supposed to have any output")
-                        },
-                        "ls" => {
-                            match words[0] {
-                                "dir" => {
-                                    let dir_name_resolved = words[1].to_owned();
-                                    directory.add_dir(&dir_name_resolved);
-                                },
-                                _ => {
-                                    directory.add_file(
-                                        words[1].to_string(), 
-                                        words[0].parse::<u32>().unwrap());
-                                }
-                            }
-                        },
-                        _ => {
-                            panic!("Invalid previous command");
+                }
+                _ => match prev_cmd {
+                    "cd" => {
+                        panic!("'cd' is not supposed to have any output")
+                    }
+                    "ls" => match words[0] {
+                        "dir" => {
+                            let dir_name_resolved = words[1].to_owned();
+                            directory.add_dir(&dir_name_resolved);
                         }
+                        _ => {
+                            directory
+                                .add_file(words[1].to_string(), words[0].parse::<u32>().unwrap());
+                        }
+                    },
+                    _ => {
+                        panic!("Invalid previous command");
                     }
                 },
             }
-        };
+        }
 
         let mut dir_storage: HashMap<String, u32> = HashMap::new();
-        
+
         directory.get_directory_storage_occupied(&directory.root_tree, &mut dir_storage);
 
         // add root directory storage
-        let outer_abs_dir = &directory.root_tree.borrow().abs_dir;  
+        let outer_abs_dir = &directory.root_tree.borrow().abs_dir;
         dir_storage.entry(outer_abs_dir.to_string()).or_insert(0);
         // add files to root directory
-        for file in &directory.directories[outer_abs_dir].borrow().files{
-            dir_storage.entry(outer_abs_dir.to_string())
-                        .and_modify(|f_size| *f_size += file.size);
+        for file in &directory.directories[outer_abs_dir].borrow().files {
+            dir_storage
+                .entry(outer_abs_dir.to_string())
+                .and_modify(|f_size| *f_size += file.size);
         }
         //Add child directories currently within root directory
-        for grandchild in  &directory.root_tree.borrow().children {
-            
+        for grandchild in &directory.root_tree.borrow().children {
             let grandchild_abs_dir = &grandchild.borrow().abs_dir;
             let grandchild_space = dir_storage[grandchild_abs_dir];
-            dir_storage.entry(outer_abs_dir.to_string())
-                        .and_modify(|f_size| *f_size += grandchild_space);
-        } 
+            dir_storage
+                .entry(outer_abs_dir.to_string())
+                .and_modify(|f_size| *f_size += grandchild_space);
+        }
 
         dir_storage
     }
 
     #[test]
-    fn test_example_tree() { 
+    fn test_example_tree() {
         // Initialize root "/"
         let root_dir = Tree::make_root_dir("/");
 
@@ -132,7 +125,7 @@ mod tests {
             File {
                 name: "photo".to_string(),
                 size: 999,
-            }, 
+            },
             root_dir.borrow().children[0].borrow().files[0]
         );
 
@@ -140,15 +133,16 @@ mod tests {
             File {
                 name: "ugly_code".to_string(),
                 size: 666,
-            }, 
-            root_dir.borrow().children[0].borrow().children[0].borrow().files[0]
+            },
+            root_dir.borrow().children[0].borrow().children[0]
+                .borrow()
+                .files[0]
         );
-        
+
         // Test directory names
         assert_eq!("/a/b/c/", c_dir.borrow().abs_dir);
         assert_eq!("/a/d/", d_dir.borrow().abs_dir);
         assert_eq!("/e/", e_dir.borrow().abs_dir);
-
     }
 
     #[test]
@@ -156,7 +150,7 @@ mod tests {
         let dir_storage = setup("../input/day7/test_input.txt");
 
         let mut sum_small_storage: u32 = 0;
-        for (_, space) in &dir_storage{
+        for (_, space) in &dir_storage {
             if *space < 100000 as u32 {
                 sum_small_storage += space;
             }
@@ -174,7 +168,7 @@ mod tests {
         let dir_storage = setup("../input/day7/final_input.txt");
 
         let mut sum_storage: u32 = 0;
-        for (_, space) in &dir_storage{
+        for (_, space) in &dir_storage {
             if *space < 100000 as u32 {
                 sum_storage += space;
             }
@@ -187,7 +181,7 @@ mod tests {
     fn test_part2() {
         let dir_storage = setup("../input/day7/test_input.txt");
 
-        let max_space:u32 = 70000000;
+        let max_space: u32 = 70000000;
 
         let total_storage_occupied: u32 = dir_storage["/"];
         assert_eq!(total_storage_occupied, 48381165);
@@ -197,14 +191,11 @@ mod tests {
         let mut smallest_candidates_storage: u32 = max_space;
         let mut smallest_candidate = "".to_string();
 
-        for (dir_name, space) in &dir_storage{
-            if *space <= smallest_candidates_storage 
-                && *space >= to_free_up
-            {
+        for (dir_name, space) in &dir_storage {
+            if *space <= smallest_candidates_storage && *space >= to_free_up {
                 smallest_candidate = dir_name.clone();
                 smallest_candidates_storage = *space;
             }
-
         }
 
         assert_eq!(smallest_candidates_storage, 24933642);
@@ -215,7 +206,7 @@ mod tests {
     fn do_part2() {
         let dir_storage = setup("../input/day7/test_input.txt");
 
-        let max_space:u32 = 70000000;
+        let max_space: u32 = 70000000;
 
         let total_storage_occupied: u32 = dir_storage["/"];
 
@@ -224,21 +215,19 @@ mod tests {
         let mut smallest_candidates_storage: u32 = max_space;
         let mut smallest_candidate = "".to_string();
 
-        for (dir_name, space) in &dir_storage{
-            if *space <= smallest_candidates_storage 
-                && *space >= to_free_up
-            {
+        for (dir_name, space) in &dir_storage {
+            if *space <= smallest_candidates_storage && *space >= to_free_up {
                 smallest_candidate = dir_name.clone();
                 smallest_candidates_storage = *space;
             }
-
         }
 
-        println!("Part 2 answer: dir '{}' which occupies {}", smallest_candidate, smallest_candidates_storage);
+        println!(
+            "Part 2 answer: dir '{}' which occupies {}",
+            smallest_candidate, smallest_candidates_storage
+        );
     }
-
 }
-
 
 #[derive(Debug)]
 pub struct File {
@@ -246,15 +235,14 @@ pub struct File {
     pub size: u32,
 }
 
-impl PartialEq for File{
+impl PartialEq for File {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && 
-        self.size == other.size
+        self.name == other.name && self.size == other.size
     }
 }
 
 #[derive(Debug)]
-pub struct Tree{
+pub struct Tree {
     pub name: String,
     pub abs_dir: String,
     pub parent: Option<Rc<RefCell<Tree>>>,
@@ -262,85 +250,72 @@ pub struct Tree{
     pub files: Vec<File>,
 }
 
-impl Tree{
-    pub fn add_child(&mut self, child: &Rc<RefCell<Tree>> ) -> () {
+impl Tree {
+    pub fn add_child(&mut self, child: &Rc<RefCell<Tree>>) -> () {
         // Add children to parent tree
         self.children.push(Rc::clone(&child));
     }
 
     pub fn add_file(&mut self, name: String, size: u32) -> () {
-        self.files.push(
-            File {
-                name,
-                size,
-            }
-        );
+        self.files.push(File { name, size });
     }
 
-    pub fn make_root_dir(
-        dir_name: &str) 
-        -> Rc<RefCell<Tree>> 
-    {
-        return Rc::new(RefCell::new(
-            Tree {
-                name: dir_name.to_string(),
-                abs_dir: dir_name.to_string(),
-                parent: None,
-                children: Vec::new(),
-                files: Vec::new(),
-            }
-        ));
+    pub fn make_root_dir(dir_name: &str) -> Rc<RefCell<Tree>> {
+        return Rc::new(RefCell::new(Tree {
+            name: dir_name.to_string(),
+            abs_dir: dir_name.to_string(),
+            parent: None,
+            children: Vec::new(),
+            files: Vec::new(),
+        }));
     }
-    
-    pub fn make_dir(
-        dir_name: &str, 
-        parent_tree: &Rc<RefCell<Tree>>) 
-        -> Rc<RefCell<Tree>> {
-        
+
+    pub fn make_dir(dir_name: &str, parent_tree: &Rc<RefCell<Tree>>) -> Rc<RefCell<Tree>> {
         let new_abs_dir = parent_tree.borrow().abs_dir.clone() + dir_name + "/";
 
-        let child_tree = Rc::new(RefCell::new(
-            Tree {
-                name: dir_name.to_string(),
-                abs_dir: new_abs_dir,
-                parent: Some(Rc::clone(&parent_tree)),
-                children: Vec::new(),
-                files: Vec::new(),
-            }
-        ));
+        let child_tree = Rc::new(RefCell::new(Tree {
+            name: dir_name.to_string(),
+            abs_dir: new_abs_dir,
+            parent: Some(Rc::clone(&parent_tree)),
+            children: Vec::new(),
+            files: Vec::new(),
+        }));
 
         //Add children to parent
         parent_tree.borrow_mut().add_child(&child_tree);
-        
+
         return child_tree;
     }
 
-    pub fn print_tree(&self, hierarchy_spacing: String) -> (){
+    pub fn print_tree(&self, hierarchy_spacing: String) -> () {
         let mut hierarchy_spacing_child = hierarchy_spacing.clone();
-        
+
         hierarchy_spacing_child += "  ";
 
         for child in &self.children {
-            child.borrow_mut().print_tree(hierarchy_spacing_child.clone());
+            child
+                .borrow_mut()
+                .print_tree(hierarchy_spacing_child.clone());
         }
     }
-
 }
 
 #[derive(Debug)]
-pub struct Directory{
+pub struct Directory {
     pub cwd: String,
     pub directories: HashMap<String, Rc<RefCell<Tree>>>,
     pub root_tree: Rc<RefCell<Tree>>,
 }
 
-impl Directory{
-
+impl Directory {
     pub fn build(root_tree: &Rc<RefCell<Tree>>) -> Directory {
         let mut directories = HashMap::new();
-        directories.insert(root_tree.borrow().abs_dir.to_string(), Rc::clone(&root_tree));
+        directories.insert(
+            root_tree.borrow().abs_dir.to_string(),
+            Rc::clone(&root_tree),
+        );
 
-        Directory{
+        Directory {
             cwd: "/".to_string(),
             directories: directories,
             root_tree: Rc::clone(&root_tree),
@@ -350,33 +325,29 @@ impl Directory{
     pub fn add_dir(&mut self, dir_name: &str) -> () {
         let abs_dir_name = self.get_abs_dir(&dir_name);
 
-        if self.check_dir_exists(&abs_dir_name){
+        if self.check_dir_exists(&abs_dir_name) {
             return;
         }
 
         let parent_tree = match self.directories.get(&self.cwd) {
-            Some(parent_tree) => {
-                parent_tree
-            },
+            Some(parent_tree) => parent_tree,
             None => {
                 panic!("Parent directory '{}' does not exist", &self.cwd);
-            },
+            }
         };
 
         let new_tree = Tree::make_dir(&dir_name, &parent_tree);
 
-        self.directories.insert(new_tree.borrow().abs_dir.to_string(), Rc::clone(&new_tree));
+        self.directories
+            .insert(new_tree.borrow().abs_dir.to_string(), Rc::clone(&new_tree));
     }
 
     pub fn add_file(&mut self, name: String, size: u32) -> () {
-        
         let tree = match self.directories.get(&self.cwd) {
-            Some(tree) => {
-                tree
-            },
+            Some(tree) => tree,
             None => {
                 panic!("directory '{}' does not exist", &self.cwd);
-            },
+            }
         };
 
         tree.borrow_mut().add_file(name, size);
@@ -394,7 +365,7 @@ impl Directory{
 
     pub fn move_dir_to(&mut self, dir_name: &str) -> () {
         let abs_dir_name = self.get_abs_dir(&dir_name);
-        if !self.check_dir_exists(&abs_dir_name){
+        if !self.check_dir_exists(&abs_dir_name) {
             panic!("Directory {} does not exist", abs_dir_name);
         }
 
@@ -410,34 +381,32 @@ impl Directory{
     }
 
     pub fn get_directory_storage_occupied(
-        &self, 
+        &self,
         tree: &Rc<RefCell<Tree>>,
-        dir_storage: &mut HashMap<String, u32>) -> () {
-        
+        dir_storage: &mut HashMap<String, u32>,
+    ) -> () {
         for child in &tree.borrow().children {
             self.get_directory_storage_occupied(child, dir_storage);
-            
+
             let abs_dir = &child.borrow().abs_dir;
 
             //Add files curernt within directory
             dir_storage.entry(abs_dir.to_string()).or_insert(0);
-            for file in &self.directories[abs_dir].borrow().files{
-                dir_storage.entry(abs_dir.to_string())
-                            .and_modify(|f_size| *f_size += file.size);
+            for file in &self.directories[abs_dir].borrow().files {
+                dir_storage
+                    .entry(abs_dir.to_string())
+                    .and_modify(|f_size| *f_size += file.size);
             }
 
             //Add child directories currently within directory
             for grandchild in &child.borrow().children {
-                
                 let grandchild_abs_dir = &grandchild.borrow().abs_dir;
                 let grandchild_space = dir_storage[grandchild_abs_dir];
-                
-                dir_storage.entry(abs_dir.to_string())
-                            .and_modify(|f_size| *f_size += grandchild_space);
-            } 
 
+                dir_storage
+                    .entry(abs_dir.to_string())
+                    .and_modify(|f_size| *f_size += grandchild_space);
+            }
         }
-
     }
-
 }

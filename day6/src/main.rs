@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashSet;
+use std::fs;
 
 fn main() {
     let input_filepath = "input/day6/final_input.txt";
@@ -7,19 +7,19 @@ fn main() {
 
     let mut packet_size: usize = 4;
     let mut start_packet_idx = packet_size;
-    let mut start_packets=  "";
+    let mut start_packets = "";
 
     let mut char_set: HashSet<u8> = HashSet::new();
-        
+
     //Test for 4 characters at a time, from 0..test_str_1.len()-3
-    for s_idx in 0..test_str.len()-packet_size+1{
+    for s_idx in 0..test_str.len() - packet_size + 1 {
         char_set.clear();
-        
-        for character in &test_str.as_bytes()[s_idx..s_idx+packet_size]{
+
+        for character in &test_str.as_bytes()[s_idx..s_idx + packet_size] {
             char_set.insert(*character);
         }
 
-        if char_set.len() == packet_size{
+        if char_set.len() == packet_size {
             start_packet_idx = s_idx + packet_size;
 
             start_packets = &test_str[s_idx..(s_idx + packet_size)];
@@ -27,20 +27,22 @@ fn main() {
         }
     }
 
-    println!("Part 1, Index: {}, packet: {}", start_packet_idx, start_packets);
-
+    println!(
+        "Part 1, Index: {}, packet: {}",
+        start_packet_idx, start_packets
+    );
 
     // Same thing, but different packet size
-    packet_size = 14; 
+    packet_size = 14;
 
-    for s_idx in 0..test_str.len()-packet_size+1{
+    for s_idx in 0..test_str.len() - packet_size + 1 {
         char_set.clear();
-        
-        for character in &test_str.as_bytes()[s_idx..s_idx+packet_size]{
+
+        for character in &test_str.as_bytes()[s_idx..s_idx + packet_size] {
             char_set.insert(*character);
         }
 
-        if char_set.len() == packet_size{
+        if char_set.len() == packet_size {
             start_packet_idx = s_idx + packet_size;
 
             start_packets = &test_str[s_idx..(s_idx + packet_size)];
@@ -48,6 +50,8 @@ fn main() {
         }
     }
 
-    println!("Part 2, Index: {}, packet: {}", start_packet_idx, start_packets);
-
+    println!(
+        "Part 2, Index: {}, packet: {}",
+        start_packet_idx, start_packets
+    );
 }
