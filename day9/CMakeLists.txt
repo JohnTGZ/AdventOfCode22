@@ -30,6 +30,16 @@ target_link_libraries(day9
     aoc_common
 )
 
+add_executable(day9_p2
+    src/day9_p2.cpp
+)
+target_include_directories(day9_p2
+    PRIVATE include
+)
+target_link_libraries(day9_p2
+    aoc_common
+)
+
 enable_testing()
 add_executable(
     test_day9

@@ -32,15 +32,15 @@ int main(int argc, char** argv){
 
     auto gridmap = GridMap(width,height);
     
-    gridmap.init(Vector2D(-min_pos.x(), -min_pos.y()), 1);
+    gridmap.init(Vector2D(-min_pos.x(), -min_pos.y()), 9);
 
     for (int i = 0; i < lines.size(); i++){
         const auto inst = FileParser::split(lines[i], ' ');
         std::cout << lines[i] << std::endl;
         gridmap.move_all_cells(
-            inst[0], std::stoi(inst[1].c_str()));
+            inst[0], std::stoi(inst[1].c_str()), true);
     }
 
-    std::cout << "Part 1: No. of cells visited by tail: " << gridmap.get_num_visited() << std::endl;
+    std::cout << "Part 2: No. of cells visited by tail: " << gridmap.get_num_visited() << std::endl;
     
 }

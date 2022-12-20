@@ -12,6 +12,10 @@
 
 #include <stdexcept>
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 enum class LOG_LEVEL { //scoped
     DEBUG,
     INFO,
@@ -132,47 +136,8 @@ enum DIRECTION {
     NORTHWEST, 
 };
 
-struct Position2D {
-    Position2D():
-        x(0), y(0)
-    {}
-
-    Position2D(const long& x, const long& y):
-        x(x), y(y)
-    {}
-
-    void move(const int& x, const int& y){
-        this->x += x;
-        this->y += y; 
-    }
-    
-    bool operator == (const Position2D &other) const{
-        return (this->x == other.x)
-            && (this->y == other.y); 
-    } 
-
-    Position2D operator + (const Position2D& other) {
-        this->x += other.x;
-        this->y += other.y;
-
-        return *this; 
-    } 
-
-    Position2D operator += (const Position2D& other) {
-        this->x += other.x;
-        this->y += other.y;
-
-        return *this; 
-    } 
-
-    long x{0};
-    long y{0};
-};
-
-struct Vector2D {
-    Vector2D(const DIRECTION& direction){
-        set_direction(direction);
-    }
+class Vector2D {
+public:
 
     Vector2D(const std::string& dir_name, const int& magnitude = 1){
         const DIRECTION direction = [&]() {
@@ -196,88 +161,120 @@ struct Vector2D {
         set_direction(direction, magnitude);
     }
 
-    Vector2D(const DIRECTION& direction, const int& magnitude){
-        set_direction(direction, magnitude);
+    Vector2D(const int& x, const int& y): x_(x), y_(y){}
+
+    // Copy constructor
+    Vector2D(const Vector2D& other)
+    : Vector2D(other.x(), other.y()){}
+
+    // Copy assignment 
+    Vector2D &operator = (const Vector2D& other) //Copy Assignment
+    {
+        if (this != &other){
+            this->x_ = other.x();
+            this->y_ = other.y();
+        }
+
+        return *this;
     }
 
-    Vector2D(const int& x, const int& y): x(x), y(y){}
+    bool operator == (const Vector2D &other) const{
+        return (this->x_ == other.x())
+            && (this->y_ == other.y()); 
+    } 
+
+    Vector2D& operator += (const Vector2D& other) {
+        this->x_ += other.x();
+        this->y_ += other.y();
+
+        return *this; 
+    } 
+
+    Vector2D& operator -= (const Vector2D& other) {
+        this->x_ -= other.x();
+        this->y_ -= other.y();
+
+        return *this; 
+    } 
+
+    void move(const int& x, const int& y){
+        this->x_ += x;
+        this->y_ += y; 
+    }
 
     void set_direction(const DIRECTION& direction, const int& magnitude = 1) {
         // Y is positive in South direction 
         // X is positive in the East direction
         switch (direction){
             case NORTH:
-                x = 0; y = -1;
+                x_ = 0; y_ = -1;
                 break;
             case NORTHEAST:
-                x = 1; y = -1;
+                x_ = 1; y_ = -1;
                 break;
             case EAST:
-                x = 1; y = 0;
+                x_ = 1; y_ = 0;
                 break;
             case SOUTHEAST:
-                x = 1; y = 1;
+                x_ = 1; y_ = 1;
                 break;
             case SOUTH:
-                x = 0; y = 1;
+                x_ = 0; y_ = 1;
                 break;
             case SOUTHWEST:
-                x = -1; y = 1;
+                x_ = -1; y_ = 1;
                 break;
             case WEST:
-                x = -1; y = 0;
+                x_ = -1; y_ = 0;
                 break;
             case NORTHWEST:
-                x = -1; y = -1;
+                x_ = -1; y_ = -1;
                 break;
             default:
                 break;
         }
-        x *= magnitude;
-        y *= magnitude;
-    }
-
-    // Copy constructor
-    Vector2D(const Vector2D& other)
-    : Vector2D(other.x, other.y){}
-
-    // Move constructor
-    Vector2D(Vector2D&& other) noexcept //Move constructor
-    : x(std::exchange(other.x, 0)), y(std::exchange(other.y, 0)) {}
-
-    // Copy assignment 
-    Vector2D &operator = (const Vector2D& other) //Copy Assignment
-    {
-        return *this = Vector2D(other);
-    }
-
-    // Move assignment 
-    Vector2D &operator = (Vector2D&& other) //Move Assignment
-    {
-        return *this = std::move(other);
+        x_ *= magnitude;
+        y_ *= magnitude;
     }
 
     float magnitude() const{
-        return std::hypot(x,y);
+        return std::hypot(x_,y_);
     }
 
-    Position2D to_position() const {
-        return Position2D(x, y);
+    Vector2D discretized_unit() const {
+        int x_unit, y_unit = 0;
+        x_unit = this->x_ != 0 ? int(std::copysign(1, this->x_)) : 0;
+        y_unit = this->y_ != 0 ? int(std::copysign(1, this->y_)) : 0;
+
+        return Vector2D(x_unit, y_unit);
     }
 
-    int x{0};
-    int y{0};
+    int x() const {
+        return this->x_;
+    }
+
+    int y() const {
+        return this->y_;
+    }
+
+private:
+    int x_{0};
+    int y_{0};
 };
 
-std::ostream &operator << (std::ostream& os, const Position2D &pos)
+Vector2D operator - (const Vector2D& lhs, const Vector2D& rhs)
 {
-    os << "(" << pos.x << "," << pos.y << ")";
-    return os; 
+    return Vector2D(
+        lhs.x() - rhs.x(),
+        lhs.y() - rhs.y()
+    );
 }
+
+using Position2D = Vector2D;
 
 std::ostream &operator << (std::ostream& os, const Vector2D &vec)
 {
-    os << "(" << vec.x << "," << vec.y << ")";
+    os << "(" << vec.x() << "," << vec.y() << ")";
     return os; 
 }
 
@@ -342,16 +339,13 @@ public:
      * @return true 
      * @return false 
      */
-    bool move_all_cells(const std::string& direction, const int& magnitude) {
+    bool move_all_cells(const std::string& direction, const int& magnitude, bool part_2 = false) {
         for (int i = 0; i < magnitude; i++){
             std::cout << "Magnitude " << i << "\n";
             
-            ///////////
-            // FIRST CELL
-            ///////////
-            Position2D parent_previous_pos = this->get_cell("C0")->position;
+            move_in_dir(this->get_cell("C0"), Vector2D(direction));
 
-            for (int i = 0; i < id_map_.size() - 1; i++) {
+            for (int i = 0; i < id_map_.size()-1; i++) {
                 std::cout << "==========\n";
 
                 const std::string& parent_id = "C"+std::to_string(i);
@@ -359,28 +353,50 @@ public:
 
                 auto parent_cell = this->get_cell(parent_id);
                 auto child_cell = this->get_cell(child_id);
-                
-                if (i == 0){
-                    std::cout << "Previous H position:" << parent_previous_pos << "\n";
-                    move_in_dir(parent_cell, Vector2D(direction));
+
+                // IF
+                // 1. Head is 2 stesps directly up, down, left or right from the tail, tail 
+                //      must also move one step in that direction so it remains close enough.
+                // 2. If head and tail aren't touching and aren't in the same row or column, 
+                //      the tail always moves one step diagonally to keep up.
+
+                const auto& t_h_vect = parent_cell->position - child_cell->position;
+
+                // std::cout << "  MAGNITUDE: " << t_h_vect.magnitude() << "\n";
+                // std::cout << "  TH Vect: "<< t_h_vect << "\n";
+                // std::cout << "  TH Discrete: "<< t_h_vect.discretized_unit() << "\n";
+
+                // IF child and parent cell not in the same row or column
+                // tail moves one step diagonally to keep up.
+                if (child_cell->position.x() != parent_cell->position.x() 
+                    && child_cell->position.y() != parent_cell->position.y())
+                {
+                    if (! (t_h_vect.magnitude() <= 1.42) ){
+                        // Move diagonally in unit x and y direction of vector
+                        child_cell->position += t_h_vect.discretized_unit();
+                        std::cout << "Moved " << child_id << " to " << child_cell->position << "\n";
+                    }
+                }
+                // Child and parent in the same row and column, move one one step in that direction
+                else {
+                    if (! (t_h_vect.magnitude() <= 1.42) ){
+                        // Move one step in the direction of the parent_cell
+
+                        child_cell->position += t_h_vect.discretized_unit();
+
+                        std::cout << "Moved " << child_id << " to " << child_cell->position << "\n";
+                    }
                 }
 
-                const auto& t_h_vect = Vector2D(
-                    parent_cell->position.x - child_cell->position.x, 
-                    parent_cell->position.y - child_cell->position.y);
-
-                if (! (t_h_vect.magnitude() <= 1.42) ){
-                    auto child_new_pos = parent_previous_pos;
-
-                    parent_previous_pos = child_cell->position;
-
-                    move_to_pos(child_cell, child_new_pos);
-                    std::cout << "Moved " << child_id << " to " << child_cell->position << "\n";
-
-                    this->visit(xy_to_idx(child_new_pos));
+                if (part_2){
+                    if (child_id.compare("C9") == 0){
+                        this->visit(xy_to_idx(child_cell->position));
+                    }
                 }
+                else {
+                    this->visit(xy_to_idx(child_cell->position));
 
-                // std::cout << "Manitude of TH Vect: "<< t_h_vect.magnitude() << "\n";
+                }
 
             }
             std::cout << "==========\n";
@@ -399,7 +415,7 @@ public:
      * @return false 
      */
     bool move_in_dir(std::shared_ptr<Cell> cell, const Vector2D& dir_vect) {
-        cell->position.move(dir_vect.x, dir_vect.y);
+        cell->position.move(dir_vect.x(), dir_vect.y());
         
         const long idx = this->xy_to_idx(cell->position);
 
@@ -457,7 +473,7 @@ public:
     }
 
     long xy_to_idx(const Position2D& position){
-        return position.y * this->width_ + position.x; 
+        return position.y() * this->width_ + position.x(); 
     }
 
     Position2D idx_to_xy(const long& idx, long& x, long& y){
@@ -491,7 +507,7 @@ private:
         return p.second;
     }
 
-    bool assign(const Position2D& position, const STATE& state) {
+    bool assign(const Vector2D& position, const STATE& state) {
         const long idx = this->xy_to_idx(position);
 
         if (idx >= size_ or idx < 0)
@@ -513,4 +529,3 @@ private:
 
     std::unordered_set<long> visited_;
 };
-
