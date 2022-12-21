@@ -138,7 +138,6 @@ enum DIRECTION {
 
 class Vector2D {
 public:
-
     Vector2D(const std::string& dir_name, const int& magnitude = 1){
         const DIRECTION direction = [&]() {
             if (dir_name.compare("U") == 0){
@@ -262,7 +261,7 @@ private:
     int y_{0};
 };
 
-Vector2D operator - (const Vector2D& lhs, const Vector2D& rhs)
+Vector2D operator- (const Vector2D& lhs, const Vector2D& rhs)
 {
     return Vector2D(
         lhs.x() - rhs.x(),
@@ -270,13 +269,13 @@ Vector2D operator - (const Vector2D& lhs, const Vector2D& rhs)
     );
 }
 
-using Position2D = Vector2D;
-
 std::ostream &operator << (std::ostream& os, const Vector2D &vec)
 {
     os << "(" << vec.x() << "," << vec.y() << ")";
     return os; 
 }
+
+using Position2D = Vector2D;
 
 struct Cell {
     Cell(std::shared_ptr<Cell> parent_cell, Position2D position, STATE state)
@@ -291,9 +290,7 @@ class GridMap {
 public:
 
     GridMap(long width, long height):
-    width_(width), height_(height), size_(width*height), origin_(0, 0) {
-        // cells_.assign(width_*height_, STATE::FREE);
-    }
+    width_(width), height_(height), size_(width*height), origin_(0, 0) {}
 
     /**
      * @brief Initialize gridmap with default starting values
@@ -343,7 +340,7 @@ public:
         for (int i = 0; i < magnitude; i++){
             std::cout << "Magnitude " << i << "\n";
             
-            move_in_dir(this->get_cell("C0"), Vector2D(direction));
+            this->get_cell("C0")->position += Vector2D(direction);
 
             for (int i = 0; i < id_map_.size()-1; i++) {
                 std::cout << "==========\n";
@@ -361,10 +358,6 @@ public:
                 //      the tail always moves one step diagonally to keep up.
 
                 const auto& t_h_vect = parent_cell->position - child_cell->position;
-
-                // std::cout << "  MAGNITUDE: " << t_h_vect.magnitude() << "\n";
-                // std::cout << "  TH Vect: "<< t_h_vect << "\n";
-                // std::cout << "  TH Discrete: "<< t_h_vect.discretized_unit() << "\n";
 
                 // IF child and parent cell not in the same row or column
                 // tail moves one step diagonally to keep up.
@@ -401,42 +394,6 @@ public:
             }
             std::cout << "==========\n";
 
-        }
-
-        return true;
-    }
-
-    /**
-     * @brief Move the cell of selected id in the direction of the vector
-     * 
-     * @param id 
-     * @param dir_vect 
-     * @return true 
-     * @return false 
-     */
-    bool move_in_dir(std::shared_ptr<Cell> cell, const Vector2D& dir_vect) {
-        cell->position.move(dir_vect.x(), dir_vect.y());
-        
-        const long idx = this->xy_to_idx(cell->position);
-
-        if (idx >= size_ or idx < 0){
-            throw std::out_of_range(
-                (std::ostringstream{} << "Gridmap index " << idx << " out of range. Size " << size_).str());
-            return false;
-        }
-
-        return true;
-    }
-
-    bool move_to_pos(std::shared_ptr<Cell> cell, const Position2D& position) {
-        cell->position = position;
-
-        const long idx = this->xy_to_idx(cell->position);
-
-        if (idx >= size_ or idx < 0){
-            throw std::out_of_range(
-                (std::ostringstream{} << "Gridmap index " << idx << " out of range. Size " << size_).str());
-            return false;
         }
 
         return true;
@@ -502,6 +459,7 @@ public:
     }
 
 private:
+
     bool visit(const long& idx){
         auto p = visited_.insert(idx);
         return p.second;
