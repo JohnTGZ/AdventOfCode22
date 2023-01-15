@@ -58,6 +58,8 @@
         "iomanip": "cpp",
         "mutex": "cpp",
         "thread": "cpp",
-        "variant": "cpp"
-    }
+        "variant": "cpp",
+        "queue": "cpp"
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/day9"
 }

@@ -43,8 +43,16 @@ Very fun problem to solve. I used a `loop` in Rust for the first time, which wil
 - We can't borrow more than one mutable references from from a vector (even if it's from 2 different indexes as the Rust compiler tries to guarantee it's safety), we could `split_at_mut()` but I opt to clone instead an individual Monkey `struct` and then reassign it back later.
 - The second part 
     - Might only need to care about the last few digits of the number (up to the hundreds)?
-    - would probably require me to conver the number to strings and multiply them?
+    - Would probably require me to convert the number to strings and multiply them?
     - https://doc.rust-lang.org/std/primitive.u32.html
+
+
+## Day 12 [C++]
+- Rely on Djikstra's algorithm. Depth Firsst Search takes forever and does not guarantee shortest paths.
+
+## Day 13 [C++]
+- 
+
 # TODO 
 - Add uncrustify as a linting tool
 
